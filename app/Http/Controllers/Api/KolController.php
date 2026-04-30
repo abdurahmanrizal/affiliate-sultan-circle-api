@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Kol;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class KolController extends Controller
@@ -32,13 +33,27 @@ class KolController extends Controller
         }
 
         // Filter by minimum jamaahs count
-        if ($request->has('min_jamaahs') && $request->min_jamaahs) {
-            $query->having('jamaahs_count', '>=', $request->min_jamaahs);
-        }
+        // if ($request->has('min_jamaahs') && $request->min_jamaahs) {
+        //     $query->having('jamaahs_count', '>=', $request->min_jamaahs);
+        // }
 
         // Filter by minimum total_click
-        if ($request->has('min_clicks') && $request->min_clicks) {
-            $query->where('total_click', '>=', $request->min_clicks);
+        // if ($request->has('min_clicks') && $request->min_clicks) {
+        //     $query->where('total_click', '>=', $request->min_clicks);
+        // }
+
+        // Filter by departure_schedule_id (from jamaahs table)
+        if ($request->has('departure_schedule_id') && $request->departure_schedule_id) {
+            $query->whereHas('jamaahs', function ($q) use ($request) {
+                $q->where('departure_schedule_id', $request->departure_schedule_id);
+            });
+        }
+
+        // Filter by status (from jamaahs table)
+        if ($request->has('status') && $request->status) {
+            $query->whereHas('jamaahs', function ($q) use ($request) {
+                $q->where('status', $request->status);
+            });
         }
 
         // Sort by
@@ -103,6 +118,27 @@ class KolController extends Controller
                 'referral_code' => $referralCode,
             ], 404);
         }
+        $kol->setAttribute('total_click_per_departure_schedule', DB::table('referrals')
+            ->where('kol_id', $kol->id)
+            ->where('status', 'clicked')
+            ->where('is_unique', 1)
+            ->groupBy('departure_schedule_id')
+            ->selectRaw('departure_schedule_id, COUNT(*) as count')
+            ->get());
+
+        $kol->setAttribute('total_booking_per_departure_schedule', DB::table('jamaahs')
+            ->where('kol_id', $kol->id)
+            ->where('status', 'booking')
+            ->groupBy('departure_schedule_id')
+            ->selectRaw('departure_schedule_id, COUNT(*) as count')
+            ->get());
+
+        $kol->setAttribute('total_registered_per_departure_schedule', DB::table('jamaahs')
+            ->where('kol_id', $kol->id)
+            ->where('status', 'paid')
+            ->groupBy('departure_schedule_id')
+            ->selectRaw('departure_schedule_id, COUNT(*) as count')
+            ->get());
 
         return response()->json($kol);
     }

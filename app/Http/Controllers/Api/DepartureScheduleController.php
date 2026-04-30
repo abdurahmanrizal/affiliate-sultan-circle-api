@@ -10,6 +10,12 @@ class DepartureScheduleController extends Controller
 {
     public function index(Request $request)
     {
-        return response()->json(DepartureSchedule::where('status', 'active')->get(), 200);
+        $data = DepartureSchedule::query();
+        if ($request->has('all') && $request->all != 'true') {
+            $data->where('status', 'active');
+        }
+        $data = $data->get();
+
+        return response()->json($data, 200);
     }
 }
