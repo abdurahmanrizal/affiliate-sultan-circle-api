@@ -46,6 +46,8 @@ class KolController extends Controller
         if ($request->has('departure_schedule_id') && $request->departure_schedule_id) {
             $query->whereHas('jamaahs', function ($q) use ($request) {
                 $q->where('departure_schedule_id', $request->departure_schedule_id);
+            })->orWhereHas('referrals', function ($q) use ($request) {
+                $q->where('departure_schedule_id', $request->departure_schedule_id);
             });
         }
 

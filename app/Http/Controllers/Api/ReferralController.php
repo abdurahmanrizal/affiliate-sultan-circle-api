@@ -33,7 +33,7 @@ class ReferralController extends Controller
         $departureSchedule = DepartureSchedule::findOrFail($id_departure_schedule);
 
         if ($departureSchedule->status !== 'active') {
-            return response()->json(['message' => 'Not found'], 404);
+            return response()->json(['message' => 'Referral Keberangkatan Sudah Tidak Aktif'], 404);
         }
 
         $alreadyClicked = Referral::query()
