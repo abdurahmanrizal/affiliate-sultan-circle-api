@@ -40,7 +40,7 @@ class ReferralController extends Controller
             ->where('kol_id', $kol->id)
             ->where('departure_schedule_id', $id_departure_schedule)
             ->where('visitor_hash', $visitorHash)
-            ->where('created_at', '>=', now()->subDay())
+            // ->where('created_at', '>=', now()->subDay())
             ->exists();
 
         Referral::create([

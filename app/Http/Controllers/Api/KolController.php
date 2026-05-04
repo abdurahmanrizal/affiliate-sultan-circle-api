@@ -13,7 +13,8 @@ class KolController extends Controller
     public function index(Request $request)
     {
         $query = Kol::with(['city', 'jamaahs', 'referrals'])
-            ->withCount(['jamaahs', 'referrals'])
+            ->withCount(['jamaahs'])
+            ->withCount(['referrals as referrals_count' => fn ($q) => $q->where('status', 'clicked')->where('is_unique', 1)])
             ->withCount(['jamaahs as jamaahs_booking_count' => fn ($q) => $q->where('status', 'booking')])
             ->withCount(['jamaahs as jamaahs_registered_count' => fn ($q) => $q->where('status', 'paid')]);
 
